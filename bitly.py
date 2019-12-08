@@ -31,7 +31,7 @@ def get_clicks(token, bitlink):
 if __name__ == "__main__":
     load_dotenv()
     token = os.getenv("TOKEN")
-    parser = argparse.ArgumentParser(description="Link shortener")
+    parser = argparse.ArgumentParser(description="Link shortener or clicks counter")
     parser.add_argument("--link", required=True,
                         help="insert link to short it")
     args = parser.parse_args()
