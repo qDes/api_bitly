@@ -6,9 +6,9 @@ import json
 from dotenv import load_dotenv
 
 
-def short_link(token, url):
+def shorten_link(bitly_token, url):
     bit_url = "https://api-ssl.bitly.com/v4/shorten"
-    headers = {'Authorization': f"Bearer {token}"}
+    headers = {'Authorization': f"Bearer {bitly_token}"}
     payload = {"long_url": url}
     response = requests.post(bit_url, headers=headers, json=payload)
     response.raise_for_status()
@@ -16,21 +16,24 @@ def short_link(token, url):
     return bitlink
 
 
-def get_clicks(token, bitlink):
+def get_clicks(bitly_token, bitlink):
     bit_url = f"https://api-ssl.bitly.com/v4/bitlinks/{bitlink}/clicks"
-    headers = {'Authorization': f"Bearer {token}"}
+    headers = {'Authorization': f"Bearer {bitly_token}"}
     payload = {"units": -1}
     response = requests.get(bit_url, headers=headers,
                             params=payload)
     response.raise_for_status()
-    link_clicks = json.loads(response.text).get("link_clicks")[0]
-    clicks = link_clicks.get("clicks")
+    try:
+        link_clicks = json.loads(response.text).get("link_clicks")[0]
+        clicks = link_clicks.get("clicks")
+    except IndexError:
+        clicks = 0
     return clicks
 
 
 if __name__ == "__main__":
     load_dotenv()
-    token = os.getenv("TOKEN")
+    bitly_token = os.getenv("BITLY_GENERIC_TOKEN")
     parser = argparse.ArgumentParser(description="Link shortener or clicks counter")
     parser.add_argument("--link", required=True,
                         help="insert link to short it")
@@ -39,9 +42,9 @@ if __name__ == "__main__":
     if link.startswith('bit.ly'):
         call_func = get_clicks
     else:
-        call_func = short_link
+        call_func = shorten_link
     try:
-        result = call_func(token, link)
+        result = call_func(bitly_token, link)
         print(result)
     except requests.exceptions.HTTPError:
         print("Error. Bad url, try another one.")
